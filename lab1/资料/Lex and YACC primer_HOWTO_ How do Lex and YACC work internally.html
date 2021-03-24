@@ -1,0 +1,416 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<!-- saved from url=(0044)https://tldp.org/HOWTO/Lex-YACC-HOWTO-6.html -->
+<html data-redeviation-bs-uid="92862" class="no-touch"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+ <meta name="GENERATOR" content="SGML-Tools 1.0.9">
+ <title>Lex and YACC primer/HOWTO: How do Lex and YACC work internally</title>
+ <link href="https://tldp.org/HOWTO/Lex-YACC-HOWTO-7.html" rel="next">
+ <link href="https://tldp.org/HOWTO/Lex-YACC-HOWTO-5.html" rel="previous">
+ <link href="https://tldp.org/HOWTO/Lex-YACC-HOWTO.html#toc6" rel="contents">
+<style class="redeviation-bs-style" data-name="content">body>div#redeviation-bs-indicator>div{opacity:0;pointer-events:none}body>iframe#redeviation-bs-sidebar.redeviation-bs-visible,body>iframe#redeviation-bs-overlay.redeviation-bs-visible{opacity:1;pointer-events:auto}body.redeviation-bs-noscroll{overflow:hidden !important}body>div#redeviation-bs-indicator>div{position:absolute;transform:translate3d(-24px, 0, 0);top:0;left:0;width:24px !important;height:100%;background:rgba(0,0,0,0.5);border-radius:0 10px 10px 0;transition:opacity 0.3s, transform 0.3s;z-index:2}body>div#redeviation-bs-indicator>div>span{-webkit-mask:no-repeat center/24px;-webkit-mask-image:url(chrome-extension://jdbnofccmhefkmjbkkdkfiicjkgofkdh/img/icon-bookmark.svg);background-color:#ffffff;position:absolute;display:block;top:0;left:0;width:100%;height:100%}body>div#redeviation-bs-indicator[data-pos='right']{left:auto;right:0}body>div#redeviation-bs-indicator[data-pos='right']>div{transform:translate3d(24px, 0, 0);left:auto;right:0;border-radius:10px 0 0 10px}body>div#redeviation-bs-indicator.redeviation-bs-fullHeight>div{border-radius:0}body>div#redeviation-bs-indicator.redeviation-bs-hover>div{transform:translate3d(0, 0, 0);opacity:1}body>div#redeviation-bs-indicator[data-pos='left'].redeviation-bs-has-lsb{height:100% !important;top:0 !important}body>div#redeviation-bs-indicator[data-pos='left'].redeviation-bs-has-lsb>div{background:transparent}body>div#redeviation-bs-indicator[data-pos='left'].redeviation-bs-has-lsb>div>span{-webkit-mask-position-y:20px}body>iframe#redeviation-bs-sidebar{width:170px;max-width:none;height:0;z-index:2147483646;background-color:rgba(0,0,0,0.6) !important;speak:none;border:none;display:block !important;transform:translate3d(-170px, 0, 0);transition:width 0s 0.3s, height 0s 0.3s, opacity 0.3s, transform 0.3s}body>iframe#redeviation-bs-sidebar[data-pos='right']{left:auto;right:0;transform:translate3d(170px, 0, 0)}body>iframe#redeviation-bs-sidebar.redeviation-bs-visible{width:calc(100% + 170px);height:100%;transform:translate3d(0, 0, 0);transition:opacity 0.3s, transform 0.3s}body>iframe#redeviation-bs-sidebar.redeviation-bs-hideMask{background:none !important}body>iframe#redeviation-bs-sidebar.redeviation-bs-hideMask:not(.redeviation-bs-hover){width:calc(170px + 50px)}body>iframe#redeviation-bs-overlay{width:100%;max-width:none;height:100%;z-index:2147483647;border:none;speak:none;background:rgba(0,0,0,0.5) !important;transition:opacity 0.3s}
+</style><style type="text/css">/*
+ * contextMenu.js v 1.4.0
+ * Author: Sudhanshu Yadav
+ * s-yadav.github.com
+ * Copyright (c) 2013 Sudhanshu Yadav.
+ * Dual licensed under the MIT and GPL licenses
+**/
+
+.iw-contextMenu {
+    box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.10) !important;
+    border: 1px solid #c8c7cc !important;
+    border-radius: 11px !important;
+    display: none;
+    z-index: 1000000132;
+    max-width: 300px !important;
+    width: auto !important;
+}
+
+.dark-mode .iw-contextMenu,
+.TnITTtw-dark-mode.iw-contextMenu,
+.TnITTtw-dark-mode .iw-contextMenu {
+    border-color: #747473 !important;
+}
+
+.iw-cm-menu {
+    background: #fff !important;
+    color: #000 !important;
+    margin: 0px !important;
+    padding: 0px !important;
+    overflow: visible !important;
+}
+
+.dark-mode .iw-cm-menu,
+.TnITTtw-dark-mode.iw-cm-menu,
+.TnITTtw-dark-mode .iw-cm-menu {
+    background: #525251 !important;
+    color: #FFF !important;
+}
+
+.iw-curMenu {
+}
+
+.iw-cm-menu li {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, Ubuntu, sans-serif !important;
+    list-style: none !important;
+    padding: 10px !important;
+    padding-right: 20px !important;
+    border-bottom: 1px solid #c8c7cc !important;
+    font-weight: 400 !important;
+    cursor: pointer !important;
+    position: relative !important;
+    font-size: 14px !important;
+    margin: 0 !important;
+    line-height: inherit !important;
+    border-radius: 0 !important;
+    display: block !important;
+}
+
+.dark-mode .iw-cm-menu li, .TnITTtw-dark-mode .iw-cm-menu li {
+    border-bottom-color: #747473 !important;
+}
+
+.iw-cm-menu li:first-child {
+    border-top-left-radius: 11px !important;
+    border-top-right-radius: 11px !important;
+}
+
+.iw-cm-menu li:last-child {
+    border-bottom-left-radius: 11px !important;
+    border-bottom-right-radius: 11px !important;
+    border-bottom: none !important;
+}
+
+.iw-mOverlay {
+    position: absolute !important;
+    width: 100% !important;
+    height: 100% !important;
+    top: 0px !important;
+    left: 0px !important;
+    background: #FFF !important;
+    opacity: .5 !important;
+}
+
+.iw-contextMenu li.iw-mDisable {
+    opacity: 0.3 !important;
+    cursor: default !important;
+}
+
+.iw-mSelected {
+    background-color: #F6F6F6 !important;
+}
+
+.dark-mode .iw-mSelected, .TnITTtw-dark-mode .iw-mSelected {
+    background-color: #676766 !important;
+}
+
+.iw-cm-arrow-right {
+    width: 0 !important;
+    height: 0 !important;
+    border-top: 5px solid transparent !important;
+    border-bottom: 5px solid transparent !important;
+    border-left: 5px solid #000 !important;
+    position: absolute !important;
+    right: 5px !important;
+    top: 50% !important;
+    margin-top: -5px !important;
+}
+
+.dark-mode .iw-cm-arrow-right, .TnITTtw-dark-mode .iw-cm-arrow-right {
+    border-left-color: #FFF !important;
+}
+
+.iw-mSelected > .iw-cm-arrow-right {
+}
+
+/*context menu css end */</style><style type="text/css">@-webkit-keyframes load4 {
+    0%,
+    100% {
+        box-shadow: 0 -3em 0 0.2em, 2em -2em 0 0em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 0;
+    }
+    12.5% {
+        box-shadow: 0 -3em 0 0, 2em -2em 0 0.2em, 3em 0 0 0, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+    }
+    25% {
+        box-shadow: 0 -3em 0 -0.5em, 2em -2em 0 0, 3em 0 0 0.2em, 2em 2em 0 0, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+    }
+    37.5% {
+        box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 0, 2em 2em 0 0.2em, 0 3em 0 0em, -2em 2em 0 -1em, -3em 0em 0 -1em, -2em -2em 0 -1em;
+    }
+    50% {
+        box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 0em, 0 3em 0 0.2em, -2em 2em 0 0, -3em 0em 0 -1em, -2em -2em 0 -1em;
+    }
+    62.5% {
+        box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 0, -2em 2em 0 0.2em, -3em 0 0 0, -2em -2em 0 -1em;
+    }
+    75% {
+        box-shadow: 0em -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0.2em, -2em -2em 0 0;
+    }
+    87.5% {
+        box-shadow: 0em -3em 0 0, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;
+    }
+}
+
+@keyframes load4 {
+    0%,
+    100% {
+        box-shadow: 0 -3em 0 0.2em, 2em -2em 0 0em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 0;
+    }
+    12.5% {
+        box-shadow: 0 -3em 0 0, 2em -2em 0 0.2em, 3em 0 0 0, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+    }
+    25% {
+        box-shadow: 0 -3em 0 -0.5em, 2em -2em 0 0, 3em 0 0 0.2em, 2em 2em 0 0, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+    }
+    37.5% {
+        box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 0, 2em 2em 0 0.2em, 0 3em 0 0em, -2em 2em 0 -1em, -3em 0em 0 -1em, -2em -2em 0 -1em;
+    }
+    50% {
+        box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 0em, 0 3em 0 0.2em, -2em 2em 0 0, -3em 0em 0 -1em, -2em -2em 0 -1em;
+    }
+    62.5% {
+        box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 0, -2em 2em 0 0.2em, -3em 0 0 0, -2em -2em 0 -1em;
+    }
+    75% {
+        box-shadow: 0em -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0.2em, -2em -2em 0 0;
+    }
+    87.5% {
+        box-shadow: 0em -3em 0 0, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;
+    }
+}</style><style type="text/css">/* This is not a zero-length file! */</style></head>
+<body class="vsc-initialized">
+<a href="https://tldp.org/HOWTO/Lex-YACC-HOWTO-7.html">Next</a>
+<a href="https://tldp.org/HOWTO/Lex-YACC-HOWTO-5.html">Previous</a>
+<a href="https://tldp.org/HOWTO/Lex-YACC-HOWTO.html#toc6">Contents</a>
+<hr>
+<h2><a name="s6">6. How do Lex and YACC work internally</a></h2>
+
+<p>In the YACC file, you write your own main() function, which calls yyparse()
+at one point. The function yyparse() is created for you by YACC, and ends up
+in y.tab.c. 
+</p><p>yyparse() reads a stream of token/value pairs from yylex(), which needs to
+be supplied. You can code this function yourself, or have Lex do it for you.
+In our examples, we've chosen to leave this task to Lex.
+</p><p>The yylex() as written by Lex reads characters from a FILE * file pointer
+called yyin. If you do not set yyin, it defaults to standard input. It
+outputs to yyout, which if unset defaults to stdout. You can also modify
+yyin in the yywrap() function which is called at the end of a file. It
+allows you to open another file, and continue parsing.
+</p><p>If this is the case, have it return 0. If you want to end parsing at this
+file, let it return 1.
+</p><p>Each call to yylex() returns an integer value which represents a token type.
+This tells YACC what kind of token it has read. The token may optionally
+have a value, which should be placed in the variable yylval.
+</p><p>By default yylval is of type int, but you can override that from the YACC
+file by re#defining YYSTYPE.
+</p><p>The Lexer needs to be able to access yylval. In order to do so, it must be
+declared in the scope of the lexer as an extern variable. The original YACC
+neglects to do this for you, so you should add the following to your lexter,
+just beneath #include &lt;y.tab.h&gt;:
+</p><p>
+</p><pre>extern YYSTYPE yylval;
+</pre>
+<p>Bison, which most people are using these days, does this for you
+automatically.
+</p><p>
+</p><h2><a name="ss6.1">6.1 Token values</a>
+</h2>
+
+<p>As mentioned before, yylex() needs to return what kind of token it
+encountered, and put its value in yylval. When these tokens are defined with
+the %token command, they are assigned numerical id's, starting from 256.
+</p><p>Because of that fact, it is possible to have all ascii characters as a
+token. Let's say you are writing a calculator, up till now we would have
+written the lexer like this:
+</p><p>
+</p><blockquote><code>
+<pre>[0-9]+          yylval=atoi(yytext); return NUMBER;
+[ \n]+          /* eat whitespace */;
+-               return MINUS;
+\*              return MULT; 
+\+              return PLUS;
+...
+</pre>
+</code></blockquote>
+<p>Our YACC grammer would then contain:
+</p><p>
+</p><blockquote><code>
+<pre>        exp:    NUMBER 
+                |
+                exp PLUS exp
+                |
+                exp MINUS exp
+                |
+                exp MULT exp
+</pre>
+</code></blockquote>
+<p>This is needlessly complicated. By using characters as shorthands for
+numerical token id's, we can rewrite our lexer like this:
+</p><p>
+</p><pre>[0-9]+          yylval=atoi(yytext); return NUMBER;
+[ \n]+          /* eat whitespace */;
+.               return (int) yytext[0];
+</pre>
+<p>This last dot matches all single otherwise unmatched characters.
+</p><p>Our YACC grammer would then be:
+</p><p>
+</p><blockquote><code>
+<pre>        exp:    NUMBER 
+                |
+                exp '+' exp
+                |
+                exp '-' exp
+                |
+                exp '*' exp
+</pre>
+</code></blockquote>
+<p>This is lots shorter and also more obvious. You do not need to declare these
+ascii tokens with %token in the header, they work out of the box.
+</p><p>One other very good thing about this construct is that Lex will now match
+everything we throw at it - avoiding the default behaviour of echoing
+unmatched input to standard output. If a user of this calculator uses a ^,
+for example, it will now generate a parsing error, instead of being echoed
+to standard output.
+</p><p>
+</p><h2><a name="ss6.2">6.2 Recursion: 'right is wrong'</a>
+</h2>
+
+<p>Recursion is a vital aspect of YACC. Without it, you can't specify that a
+file consists of a sequence of independent commands or statements. Out of
+its own accord, YACC is only interested in the first rule, or the one you
+designate as the starting rule, with the '%start' symbol.
+</p><p>Recursion in YACC comes in two flavours: right and left. Left recursion,
+which is the one you should use most of the time, looks like this:
+</p><pre>commands: /* empty */
+        |
+        commands command
+</pre>
+
+This says: a command is either empty, or it consists of more commands,
+followed by a command. They way YACC works means that it can now easily chop
+off individual command groups (from the front) and reduce them.
+<p>Compare this to right recursion, which confusingly enough looks better to
+many eyes:
+</p><pre>commands: /* empty */
+        |
+        command commands
+</pre>
+
+But this is expensive. If used as the %start rule, it requires YACC to keep
+all commands in your file on the stack, which may take a lot of memory. So
+by all means, use left recursion when parsing long statements, like entire
+files. Sometimes it is hard to avoid right recursion but if your statements
+are not too long, you do not need to go out of your way to use left
+recursion.
+<p>If you have something terminating (and therefore separating) your commands,
+right recursion looks very natural, but is still expensive:
+</p><pre>commands: /* empty */
+        |
+        command SEMICOLON commands
+</pre>
+<p>The right way to code this is using left recursion (I didn't invent this
+either):
+</p><pre>commands: /* empty */
+        |
+        commands command SEMICOLON
+</pre>
+<p>Earlier versions of this HOWTO mistakenly used right recursion. Markus
+Triska kindly informed us of this.
+</p><p>
+</p><h2><a name="ss6.3">6.3 Advanced yylval: %union</a>
+</h2>
+
+<p>Currently, we need to define *the* type of yylval. This however is not
+always appropriate. There will be times when we need to be able to handle
+multiple data types. Returning to our hypothetical thermostat, perhaps we
+want to be able to choose a heater to control, like this:
+</p><p>
+</p><blockquote><code>
+<pre>heater mainbuiling
+        Selected 'mainbuilding' heater
+target temperature 23
+        'mainbuilding' heater target temperature now 23
+</pre>
+</code></blockquote>
+<p>What this calls for is for yylval to be a union, which can hold both strings
+and integers - but not simultaneously.
+</p><p>Remember that we told YACC previously what type yylval was supposed to by by
+defining YYSTYPE. We could conceivably define YYSTYPE to be a union this
+way, by YACC has an easier method for doing this: the %union statement.
+</p><p>Based on Example 4, we now write the Example 7 YACC grammar. First the
+intro:
+</p><blockquote><code>
+<pre>%token TOKHEATER TOKHEAT TOKTARGET TOKTEMPERATURE
+
+%union 
+{
+        int number;
+        char *string;
+}
+
+%token &lt;number&gt; STATE
+%token &lt;number&gt; NUMBER
+%token &lt;string&gt; WORD
+</pre>
+</code></blockquote>
+<p>We define our union, which contains only a number and a string. Then using
+an extended %token syntax, we explain to YACC which part of the union each
+token should access.
+</p><p>In this case, we let the STATE token use an integer, as before. Same goes
+for the NUMBER token, which we use for reading temperatures.
+</p><p>New however is the WORD token, which is declared to need a string.
+</p><p>The Lexer file changes a bit too:
+</p><blockquote><code>
+<pre>%{
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include "y.tab.h"
+%}
+%%
+[0-9]+                  yylval.number=atoi(yytext); return NUMBER;
+heater                  return TOKHEATER;
+heat                    return TOKHEAT;
+on|off                  yylval.number=!strcmp(yytext,"on"); return STATE;
+target                  return TOKTARGET;
+temperature             return TOKTEMPERATURE;
+[a-z0-9]+               yylval.string=strdup(yytext);return WORD;
+\n                      /* ignore end of line */;
+[ \t]+                  /* ignore whitespace */;
+%%
+</pre>
+</code></blockquote>
+<p>As you can see, we don't access the yylval directly anymore, we add a suffix
+indicating which part we want to access. We don't need to do that in the
+YACC grammar however, as YACC performs the magic for us:
+</p><p>
+</p><blockquote><code>
+<pre>heater_select:
+        TOKHEATER WORD
+        {
+                printf("\tSelected heater '%s'\n",$2);
+                heater=$2;
+        }
+        ;
+</pre>
+</code></blockquote>
+<p>Because of the %token declaration above, YACC automatically picks 
+the 'string' member from our union. Note also that we store a copy of $2,
+which is later used to tell the user which heater he is sending commands to:
+</p><p>
+</p><blockquote><code>
+<pre>target_set:
+        TOKTARGET TOKTEMPERATURE NUMBER
+        {
+                printf("\tHeater '%s' temperature set to %d\n",heater,$3);
+        }
+        ;
+</pre>
+</code></blockquote>
+<p>For more details, read example7.y.
+</p><p>
+</p><hr>
+<a href="https://tldp.org/HOWTO/Lex-YACC-HOWTO-7.html">Next</a>
+<a href="https://tldp.org/HOWTO/Lex-YACC-HOWTO-5.html">Previous</a>
+<a href="https://tldp.org/HOWTO/Lex-YACC-HOWTO.html#toc6">Contents</a>
+
+
+<audio controls="controls" style="display: none;"></audio><iframe id="redeviation-bs-sidebar" class="notranslate" aria-hidden="true" data-theme="default" data-pos="right" src="./Lex and YACC primer_HOWTO_ How do Lex and YACC work internally_files/saved_resource.html"></iframe><div id="redeviation-bs-indicator" data-theme="default" style="width: 21px; height: 8%; top: 0%;"></div></body><style type="text/css">#yddContainer{display:block;font-family:Microsoft YaHei;position:relative;width:100%;height:100%;top:-4px;left:-4px;font-size:12px;border:1px solid}#yddTop{display:block;height:22px}#yddTopBorderlr{display:block;position:static;height:17px;padding:2px 28px;line-height:17px;font-size:12px;color:#5079bb;font-weight:bold;border-style:none solid;border-width:1px}#yddTopBorderlr .ydd-sp{position:absolute;top:2px;height:0;overflow:hidden}.ydd-icon{left:5px;width:17px;padding:0px 0px 0px 0px;padding-top:17px;background-position:-16px -44px}.ydd-close{right:5px;width:16px;padding-top:16px;background-position:left -44px}#yddKeyTitle{float:left;text-decoration:none}#yddMiddle{display:block;margin-bottom:10px}.ydd-tabs{display:block;margin:5px 0;padding:0 5px;height:18px;border-bottom:1px solid}.ydd-tab{display:block;float:left;height:18px;margin:0 5px -1px 0;padding:0 4px;line-height:18px;border:1px solid;border-bottom:none}.ydd-trans-container{display:block;line-height:160%}.ydd-trans-container a{text-decoration:none;}#yddBottom{position:absolute;bottom:0;left:0;width:100%;height:22px;line-height:22px;overflow:hidden;background-position:left -22px}.ydd-padding010{padding:0 10px}#yddWrapper{color:#252525;z-index:10001;background:url(chrome-extension://eopjamdnofihpioajgfdikhhbobonhbb/ab20.png);}#yddContainer{background:#fff;border-color:#4b7598}#yddTopBorderlr{border-color:#f0f8fc}#yddWrapper .ydd-sp{background-image:url(chrome-extension://eopjamdnofihpioajgfdikhhbobonhbb/ydd-sprite.png)}#yddWrapper a,#yddWrapper a:hover,#yddWrapper a:visited{color:#50799b}#yddWrapper .ydd-tabs{color:#959595}.ydd-tabs,.ydd-tab{background:#fff;border-color:#d5e7f3}#yddBottom{color:#363636}#yddWrapper{min-width:250px;max-width:400px;}</style></html>

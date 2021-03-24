@@ -1,6 +1,10 @@
 #ifndef _TOKEN_H
 #define _TOKEN_H
 
+#define MAXSTRTABLE 10000
+#define MAXSINGLELEN 1000
+
+#define TOKEN               2
 #define	ANDnum				257
 #define ASSGNnum			258
 #define DECLARATIONSnum		259
@@ -41,5 +45,13 @@
 #define TIMESnum			294
 #define VOIDnum				295
 #define EOFnum				0
+#define MALFORMEDID         1
+#define UNMATCHEDS          2
+#define UNDEFINEDSYMBOL     3
+#define EOFINCOOMMENT       4
+#define BLANKSPACE 100
+#define NEWLINE 101
+#define TAB 102
+#define ANNOTATION 103
 
 #endif

@@ -29,7 +29,7 @@ $(lexofile): $(lexcfile) token.h
 
 # rule to convert *.l into *.c
 $(lexcfile): *.l
-	lex $<
+	flex $<
 
 # clean
 .PHONY: clean
