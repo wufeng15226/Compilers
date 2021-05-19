@@ -1,15 +1,18 @@
 %{ /* definition */
 #include "proj2.h"
+#include "proj3.h"
 #include <stdio.h>
 
 tree typePtr; // 用来传递type指针的全局变量
+tree parseTree;
+extern void do_semantic(tree);
 %}
 
 %token <intg> ANDnum ASSGNnum DECLARATIONSnum DOTnum ENDDECLARATIONSnum EQUALnum GTnum IDnum INTnum LBRACnum LPARENnum METHODnum NEnum ORnum PROGRAMnum RBRACnum RPARENnum SEMInum VALnum WHILEnum CLASSnum COMMAnum DIVIDEnum ELSEnum EQnum GEnum ICONSTnum IFnum LBRACEnum LEnum LTnum MINUSnum NOTnum PLUSnum RBRACEnum RETURNnum SCONSTnum TIMESnum VOIDnum EOFnum MALFORMEDID UNMATCHEDS UNDEFINEDSYMBOL EOFINCOOMMENT BLANKSPACE NEWLINE TAB ANNOTATION
 %type <tptr> Program _ClassDecl ClassDecl ClassBody _MethodDecl Decls _FieldDecl FieldDecl VariableDeclId _VariableDeclId __VariableDeclId ___VariableDeclId VariableInitializer _ArrayInitializer ArrayInitializer ArrayCreationExpression _ArrayCreationExpression MethodDecl FormalParameterList _FormalParameterList _FormalParameterList1 _FormalParameterList2 Block Type _Type __Type StatementList _Statement Statement AssignmentStatement MethodCallStatement ReturnStatement IfStatement _IfStatement WhileStatement Expression _Expression1 _Expression2 SimpleExpression Term _Term Factor _Factor UnsignedConstant Variable _Variable
 
 %% /* yacc specification */
-Program: PROGRAMnum IDnum SEMInum _ClassDecl { $$ = MakeTree(ProgramOp, $4, MakeLeaf(IDNode, $2)); printtree($$, 0); }
+Program: PROGRAMnum IDnum SEMInum _ClassDecl { $$ = MakeTree(ProgramOp, $4, NullExp()); parseTree = $$; /*printtree($$, 0);*/ }
         ;
 
 /* 以_或__开头的非终结符都是用于辅助循环 */
@@ -30,7 +33,7 @@ _MethodDecl: _MethodDecl MethodDecl { $$ = MakeTree(BodyOp, $1, $2); }
         | MethodDecl { $$ = MakeTree(BodyOp, NullExp(), $1); }
         ;
 
-Decls: DECLARATIONSnum ENDDECLARATIONSnum { $$ = NullExp(); }
+Decls: DECLARATIONSnum ENDDECLARATIONSnum { $$ = MakeTree(BodyOp, NullExp(), NullExp()); } /* 虽然没有变量定义，但还是用一个子树表示该定义的存在 */
         | DECLARATIONSnum _FieldDecl ENDDECLARATIONSnum { $$ = $2; }
         ;
 
@@ -68,7 +71,7 @@ VariableInitializer: Expression { $$ = $1; }
 ArrayInitializer: LBRACEnum _ArrayInitializer RBRACEnum { $$ = MakeTree(ArrayTypeOp, $2, typePtr); }
         ;
 
-_ArrayInitializer: VariableInitializer COMMAnum _ArrayInitializer { $$ = MakeTree(CommaOp, $3, $1); }
+_ArrayInitializer: _ArrayInitializer COMMAnum VariableInitializer { $$ = MakeTree(CommaOp, $1, $3); }
         | VariableInitializer { $$ = MakeTree(CommaOp, NullExp(), $1); }
         ;
 
@@ -76,7 +79,7 @@ ArrayCreationExpression: INTnum _ArrayCreationExpression { $$ = MakeTree(ArrayTy
         ;
 
 _ArrayCreationExpression: _ArrayCreationExpression LBRACnum Expression RBRACnum { $$ = MakeTree(BoundOp, $1, $3); }
-        | LBRACnum Expression RBRACnum { $$ = $2; }
+        | LBRACnum Expression RBRACnum { $$ = MakeTree(BoundOp, NullExp(), $2);; }
         ;
 
 /* 这里用到了之前存储的typeptr */
@@ -95,12 +98,12 @@ _FormalParameterList: INTnum _FormalParameterList1 { $$ = $2; }
         | { $$ = NullExp(); }
         ;
 
-_FormalParameterList1: IDnum DOTnum _FormalParameterList1 { $$ = MakeTree(VArgTypeOp, MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, NullExp())), $3); }
-        | IDnum { $$ = MakeTree(VArgTypeOp, MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, NullExp())), NullExp()); }
+_FormalParameterList1: IDnum COMMAnum _FormalParameterList1 { $$ = MakeTree(RArgTypeOp, MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, NullExp())), $3); }
+        | IDnum { $$ = MakeTree(RArgTypeOp, MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, NullExp())), NullExp()); }
         ;
 
-_FormalParameterList2: IDnum DOTnum _FormalParameterList1 { $$ = MakeTree(VArgTypeOp, MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, NullExp())), $3); }
-        | IDnum { $$ = MakeTree(RArgTypeOp, MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, NullExp())), NullExp()); }
+_FormalParameterList2: IDnum COMMAnum _FormalParameterList2 { $$ = MakeTree(VArgTypeOp, MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, NullExp())), $3); }
+        | IDnum { $$ = MakeTree(VArgTypeOp, MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, NullExp())), NullExp()); }
         ;
 
 
@@ -125,7 +128,7 @@ __Type: __Type LBRACnum RBRACnum { $$ = MakeTree(IndexOp, NullExp(), $1); }
         ;
 
 StatementList: LBRACEnum _Statement RBRACEnum { $$ = $2; }
-        | LBRACEnum RBRACEnum { $$ = NullExp(); }
+        | LBRACEnum RBRACEnum { $$ = MakeTree(StmtOp, NullExp(), NullExp()); }
         ;
 
 _Statement: _Statement Statement SEMInum { $$ = MakeTree(StmtOp, $1, $2); }
@@ -154,7 +157,7 @@ ReturnStatement: RETURNnum { $$ = MakeTree(ReturnOp, NullExp(), NullExp()); }
 IfStatement: _IfStatement { $$ = $1; }
         | _IfStatement ELSEnum StatementList { $$ = MakeTree(IfElseOp, $1, $3); }
 
-_IfStatement: _IfStatement IFnum Expression StatementList ELSEnum { $$ = MakeTree(IfElseOp, $1, MakeTree(CommaOp, $3, $4)); }
+_IfStatement: _IfStatement ELSEnum IFnum Expression StatementList  { $$ = MakeTree(IfElseOp, $1, MakeTree(CommaOp, $4, $5)); }
         | IFnum Expression StatementList { $$ = MakeTree(IfElseOp, NullExp(), MakeTree(CommaOp, $2, $3)); }
         ;
 
@@ -178,9 +181,9 @@ SimpleExpression: Term { $$ = $1; }
         | MINUSnum Term _Term {  $$ = MkLeftC(MakeTree(UnaryNegOp, $2, NullExp()), $3); }
         ;
 
-_Term: PLUSnum Term _Term { $$ = MakeTree(AddOp, $3, $2); }
-        | MINUSnum Term _Term { $$ = MakeTree(SubOp, $3, $2); }
-        | ORnum Term _Term { $$ = MakeTree(OrOp, $3, $2); }
+_Term: _Term PLUSnum Term { $$ = MakeTree(AddOp, $1, $3); }
+        | _Term MINUSnum Term { $$ = MakeTree(SubOp, $1, $3); }
+        | _Term ORnum Term { $$ = MakeTree(OrOp, $1, $3); }
         | { $$ = NullExp(); }
         ;
 
@@ -209,8 +212,8 @@ Variable: IDnum _Variable { $$ = MakeTree(VarOp, MakeLeaf(IDNode, $1), $2); }
         | IDnum { $$ = MakeTree(VarOp, MakeLeaf(IDNode, $1), NullExp()); }
         ;
 
-_Variable: _Variable LBRACnum _Expression1 RBRACnum { $$ = MakeTree(SelectOp, $3, $1); }
-        | _Variable DOTnum IDnum { $$ = MakeTree(SelectOp, MakeTree(FieldOp, MakeLeaf(IDNode, $3), NullExp()), $1); }
+_Variable: LBRACnum _Expression1 RBRACnum _Variable { $$ = MakeTree(SelectOp, $2, $4); }
+        | DOTnum IDnum _Variable { $$ = MakeTree(SelectOp, MakeTree(FieldOp, MakeLeaf(IDNode, $2), NullExp()), $3); }
         | LBRACnum _Expression1 RBRACnum { $$ = MakeTree(SelectOp, $2, NullExp()); }
         | DOTnum IDnum { $$ = MakeTree(SelectOp, MakeTree(FieldOp, MakeLeaf(IDNode, $2), NullExp()), NullExp()); }
         ;
@@ -221,7 +224,7 @@ _Expression1: Expression COMMAnum _Expression1 { $$ = MakeTree(IndexOp, $1, $3);
         | Expression { $$ = MakeTree(IndexOp, $1, NullExp()); }
         ;
 
-_Expression2: Expression COMMAnum _Expression2 { $$ = MakeTree(CommaOp, $1, $3); }
+_Expression2: Expression COMMAnum _Expression2{ $$ = MakeTree(CommaOp, $1, $3); }
         | Expression { $$ = MakeTree(CommaOp, $1, NullExp()); }
         ;
 
@@ -231,7 +234,8 @@ extern char* yytext;
 extern int yyleng;
 extern FILE* yyin;
 extern FILE* yyout;
-FILE *treelst;
+FILE* outFile;
+FILE* treelst;
 
 int main(int argc, char** argv) {
 
@@ -242,12 +246,15 @@ int main(int argc, char** argv) {
         // File open
         FILE* inFile = fopen(argv[1], "r");
 	if(!inFile) printf("inFile open error!\n");
-	FILE* outFile = fopen(argv[2], "w+");
+	outFile = fopen(argv[2], "w+");
 	if(!outFile) printf("outFile open error!\n");
 	
         yyin = inFile;
         treelst = outFile;
+        // treelst = stdout;
         yyparse();
+        do_semantic(parseTree);  // Do semantic analysis
+        printtree(parseTree, 0); // Print the parse tree
 
         // File close
 	fclose(inFile);
