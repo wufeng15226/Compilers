@@ -130,6 +130,7 @@ STInit()
 
 }
 
+
 void error_msg(type, action, id, seq)
 int type, action, id, seq;
 {
@@ -138,89 +139,91 @@ int type, action, id, seq;
   {
     case STACK_OVERFLOW:
 	printf("stack overflow.\n");
-  break;
+	break;
     case REDECLARATION:
 	printf("symbol %s: redeclared.\n", getname(id));
-  break;
+	break;
     case ST_OVERFLOW:
-		printf("symbol table overflow.\n");
-  break;
+	printf("symbol table overflow.\n");
+	break;
     case UNDECLARATION:
-		printf("symbol %s: undeclared.\n", getname(id));
-  break;
+	printf("symbol %s: undeclared.\n", getname(id));
+	break;
     case ATTR_OVERFLOW:
-		printf("attribute array overflowed.\n");
-  break;
+	printf("attribute array overflowed.\n");
+	break;
     case BOUND:
-		printf("symbol %s: not declared as a constant, can't be used as subrange bound.\n", getname(id));
-  break;
+	printf("symbol %s: not declared as a constant, can't be used as subrange bound.\n", getname(id));
+	break;
     case ARGUMENTS_NUM1:
-		printf("routine %s: argument number in definition is different with the previous forward declaration. \n", getname(id));
-  break;
+	printf("routine %s: argument number in definition is different with the previous forward declaration. \n", getname(id));
+	break;
     case ARGUMENTS_NUM2:
-		printf("routine %s: argument number is different with the previous declaration. \n", getname(id));
-  break;
+	printf("routine %s: argument number is different with the previous declaration. \n", getname(id));
+	break;
     case FORW_REDECLARE:
-		printf("routine %s: forward redeclaration.\n", getname(id));
-  break; 
+	printf("routine %s: forward redeclaration.\n", getname(id));
+	break; 
     case PROCE_MISMATCH: 
-		printf("symbol %s: can't act as a procedure call.\n", getname(id)); 
-  break;
+	printf("symbol %s: can't act as a procedure call.\n", getname(id)); 
+	break;
      case FUNC_MISMATCH:
-                printf("symbol %s: can't act as a function call.\n", getname(id));
+        printf("symbol %s: can't act as a function call.\n", getname(id));
         break;
     case VAR_VAL:
-		printf("routine %s: reference/value type of the ", getname(id));
-		printf("%s parameter different with previous forward declaration.\n", seq_str(seq));
-  break;
+	printf("routine %s: reference/value type of the ", getname(id));
+	printf("%s parameter different with previous forward declaration.\n", seq_str(seq));
+	break;
     case CONSTANT_VAR:
-		printf("routine %s: the ", getname(id));
-		printf("%s parameter is a reference argument, can't be a constant.\n", seq_str(seq));
-  break;
+	printf("routine %s: the ", getname(id));
+	printf("%s parameter is a reference argument, can't be a constant.\n", seq_str(seq));
+	break;
     case EXPR_VAR:
-		printf("routine %s: reference argument of the ", getname(id));
-		printf("%s parameter can't be a expression. \n", seq_str(seq));	
-  break;
+	printf("routine %s: reference argument of the ", getname(id));
+	printf("%s parameter can't be a expression. \n", seq_str(seq));	
+	break;
     case CONSTANT_ASSIGN:
-		printf("symbol %s: declared to be a constant, can't be assigned a new value.\n", getname(id));
-  break;
+	printf("symbol %s: declared to be a constant, can't be assigned a new value.\n", getname(id));
+	break;
     case STRING_ASSIGN:
-		printf("symbol %s: declared to be an int, can't be assigned a string.\n", getname(id));
-  break;
+	printf("symbol %s: declared to be an int, can't be assigned a string.\n", getname(id));
+	break;
     case ARR_TYPE_MIS:
 	if (seq == 0)
-		  printf("symbol %s: isn't defined as an array.\n", getname(id));
+	  printf("symbol %s: isn't defined as an array.\n", getname(id));
+	else
 	{
-	  	  printf("symbol %s: the ", getname(id));
-		  printf("%s index isn't defined as an array.\n", seq_str(seq));}
-
+	  printf("symbol %s: the ", getname(id));
+	  printf("%s index isn't defined as an array.\n", seq_str(seq));
+	}
 	break;
   case ARR_DIME_MIS:
-        printf("symbol %s: inappropriate usage of arry element.\n", getname(id));
+    printf("symbol %s: inappropriate usage of arry element.\n", getname(id));
     break;
     case REC_TYPE_MIS:
-	          printf("symbol %s: illegal usage of a field name. \n", getname(id));break;
-
+          printf("symbol %s: illegal usage of a field name. \n", getname(id));
+	break;
     case INDX_MIS:
-            printf("symbol %s: has incorrect number of dimensions.\n", getname(id));
+      printf("symbol %s: has incorrect number of dimensions.\n", getname(id));
+      /*printf("%s index has incorrect number of dimensions.\n", seq_str(seq));*/
 	break;
     case FIELD_MIS:
-		printf("symbol %s: is an undeclared field name.\n", getname(id));
-  break;
+	printf("symbol %s: is an undeclared field name.\n", getname(id));
+	break;
     case VARIABLE_MIS:
-		printf("symbol %s: can't be used as a variable.\n", getname(id));
-  break;
+	printf("symbol %s: can't be used as a variable.\n", getname(id));
+	break;
     case NOT_TYPE:
-                printf("symbol %s: is not declared as a type.\n", getname(id));
+        printf("symbol %s: is not declared as a type.\n", getname(id));
         break;
     case TYPE_MIS:
-		printf("symbol %s: incorrect type usage.\n", getname(id));
-  break;
+	printf("symbol %s: incorrect type usage.\n", getname(id));
+	break;
   case MULTI_MAIN:
-        printf("main() method already declared.\n");
+    printf("main() method already declared.\n");
     break;
     default:
-  	printf("error type: %d.\n", type);
+	printf("error type: %d.\n", type);
   }
   if (action == ABORT)
     exit(0);
@@ -274,7 +277,7 @@ LookUp(id)
     }
 
   /* id is undefined, push a dummy element onto stack */
-  // error_msg(UNDECLARATION, CONTINUE, id, 0);
+  error_msg(UNDECLARATION, CONTINUE, id, 0);
   Push(false, id, 0, true);
   return 0;
 }
@@ -308,7 +311,7 @@ LookUpField(st_ptr, id)
   int id;
 {
   int nesting=GetAttr(st_ptr, NEST_ATTR);
-  int i = 0/*, nest*/;
+  int i/*, nest*/;
   for(i=st_ptr+1; i<=st_top; i++)
   {
     if(GetAttr(i, NEST_ATTR) <= nesting)
@@ -351,7 +354,7 @@ CloseBlock()
     }
 
   nesting--;
-  // stack_top = i - 1;				 /* trim the stack */
+  stack_top = i - 1;				 /* trim the stack */
 }
 
 /*
@@ -472,15 +475,16 @@ STPrint()
   int treeval = 0;
   tree ptrTree;
 
-  printf(
+  table = stdout;
+  fprintf(table,
 	  "********************************Symbol Table************************************\n\n");
-  printf(
+  fprintf(table,
 	  "          Name Nest-Level  Tree-Node Predefined        Kind      Type      Value     Offset  Dimension     Argnum\n\n");
 
   for (i = 1; i <= st_top; i++)
   {
     treeval = 0;
-    printf( "%3d", i);
+    fprintf(table, "%3d", i);
     for (attr_num = NAME_ATTR; attr_num <= ARGNUM_ATTR; attr_num++)
       if ((attr_ptr = IsAttr(i, attr_num)))
       {
@@ -488,27 +492,27 @@ STPrint()
 	switch (attr_num)
         {
 	case NAME_ATTR:
-	   printf( "%11s", getname(attr_val));
+	   fprintf(table, "%11s", getname(attr_val));
 	  break;
 	case OFFSET_ATTR:
 	case NEST_ATTR:
-	  printf( "%11lu", attr_val);
+	  fprintf(table, "%11lu", attr_val);
 	  break;
 	case TREE_ATTR:
-	  printf( "%11s", "proc-tree");
+	  fprintf(table, "%11s", "proc-tree");
 	  break;
 	case TYPE_ATTR:
 	  treeval = attr_val;
-	  printf( "%11s", "type-tree");
+	  fprintf(table, "%11s", "type-tree");
 	  break;
 	case PREDE_ATTR:
 	  if (attr_val == true)
-	    printf( "%11s", "yes");
+	    fprintf(table, "%11s", "yes");
 	  else 
-	    printf( "%11s", "no");
+	    fprintf(table, "%11s", "no");
 	  break;
 	case KIND_ATTR:
-	  printf( "%11s", kind_name[attr_val - 1]);
+	  fprintf(table, "%11s", kind_name[attr_val - 1]);
 	  break;
 	case VALUE_ATTR:
 	  if (GetAttr(i, KIND_ATTR) == CONST)
@@ -517,29 +521,29 @@ STPrint()
 	      switch (NodeKind(ptrTree))
 		{
 		case NUMNode:
-		  printf( "%11d", IntVal(ptrTree));
+		  fprintf(table, "%11d", IntVal(ptrTree));
 		  break;
 		case CHARNode:
 		  if (isprint(IntVal(ptrTree)))
-		    printf( "%11c", IntVal(ptrTree));
+		    fprintf(table, "%11c", IntVal(ptrTree));
 		  break;
 		case STRINGNode:
-		  printf( "%11s", getstring(IntVal(ptrTree)));
+		  fprintf(table, "%11s", getstring(IntVal(ptrTree)));
 		  break;
 		}
 	    }
 	  break;
 	case DIMEN_ATTR:
-	  printf( "%11lu",attr_val);
+	  fprintf(table, "%11lu",attr_val);
 	  break;
         case ARGNUM_ATTR:
-	  printf( "%11lu",attr_val);
+	  fprintf(table, "%11lu",attr_val);
           break;
         }
       }
       else
-	printf( "%11s", " ");
-    printf( "\n");
+	fprintf(table, "%11s", " ");
+    fprintf(table, "\n");
     /* if (treeval!=0)
        printtree((tree)treeval, 0);*/
   }

@@ -1,0 +1,12 @@
+********************************Symbol Table************************************
+
+          Name Nest-Level  Tree-Node Predefined        Kind      Type      Value     Offset  Dimension     Argnum
+
+  1      Point          0                            class                                                       
+  2          y          1                         variable  type-tree                     0                      
+  3          x          1                         variable  type-tree                     4                      
+  4       Test          0                            class                                                       
+  5         p0          1                         variable  type-tree                     0                      
+  6       main          1  proc-tree             procedure                                                      0
+  7          p          2                         variable  type-tree                    -8                      
+  8        xxx          2                         variable  type-tree                   -12                      
