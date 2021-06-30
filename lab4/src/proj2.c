@@ -17,6 +17,7 @@ Aggelos Varvitsiotis.
 #include <stdio.h>
 #include <stdlib.h>
 #include "proj2.h"
+extern attr_type attrarray[ATTR_SIZE];
 
 ILTree dummy = { DUMMYNode, 0, 0, 0, 0 };
  
@@ -335,6 +336,7 @@ void zerocrosses ()
 }
 
 extern char  strg_tbl[];
+extern int strCnt;
 
 char* getname(int i)/*return ID name or String, i is the index of the string table, passed through yylval*/
 {
@@ -387,8 +389,10 @@ void printtree (nd, depth)
                     {
                       id = indx; /* GetAttr(indx, NAME_ATTR); */
                       fprintf (treelst,"[STNode,%d,\"%s\"]\n", IntVal(nd),
-                                                    getname(id));
-                    }
+                                                    getname(attrarray[IsAttr(id, NAME_ATTR)].attr_val));
+                    //   fprintf (treelst,"[STNode,%d,\"%s\"]\n", IntVal(nd),
+                    //                                 getname(id));
+					}
                     else 
                       fprintf (treelst,"[IDNode,%d,\"%s\"]\n", indx, "err");
                     break;
@@ -425,5 +429,15 @@ void printtree (nd, depth)
 
 int loc_str(char* str) {
   // search the strg_tbl to locate 'str'
-  return 0;
+  int index = -1;
+    int cnt = strCnt;
+    char* curr;
+    while(cnt--){
+        index = nextIndex(strg_tbl, &index);
+        curr = strg_tbl+index;
+        if(!strcmp(curr, str)){
+            return index;
+        }
+    }
+    return -1;
 }

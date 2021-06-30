@@ -52,4 +52,4 @@ y.tab.c y.tab.h: *.y
 # clean
 .PHONY: clean
 clean:
-	rm -f *.o *.yy.* *.tab.* $(EXEC)
+	rm -f *.o *.yy.* *.tab.* $(EXEC) *.out *.s ../*.out*

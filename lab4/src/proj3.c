@@ -130,100 +130,100 @@ STInit()
 
 }
 
-
+extern FILE* outFile;
 void error_msg(type, action, id, seq)
 int type, action, id, seq;
 {
-  printf("Semantic Error--line: %d, ", yyline);
+  fprintf(outFile, "Semantic Error--line: %d, ", yyline);
   switch (type)
   {
     case STACK_OVERFLOW:
-	printf("stack overflow.\n");
+	fprintf(outFile, "stack overflow.\n");
 	break;
     case REDECLARATION:
-	printf("symbol %s: redeclared.\n", getname(id));
+	fprintf(outFile, "symbol %s: redeclared.\n", getname(id));
 	break;
     case ST_OVERFLOW:
-	printf("symbol table overflow.\n");
+	fprintf(outFile, "symbol table overflow.\n");
 	break;
     case UNDECLARATION:
-	printf("symbol %s: undeclared.\n", getname(id));
+	fprintf(outFile, "symbol %s: undeclared.\n", getname(id));
 	break;
     case ATTR_OVERFLOW:
-	printf("attribute array overflowed.\n");
+	fprintf(outFile, "attribute array overflowed.\n");
 	break;
     case BOUND:
-	printf("symbol %s: not declared as a constant, can't be used as subrange bound.\n", getname(id));
+	fprintf(outFile, "symbol %s: not declared as a constant, can't be used as subrange bound.\n", getname(id));
 	break;
     case ARGUMENTS_NUM1:
-	printf("routine %s: argument number in definition is different with the previous forward declaration. \n", getname(id));
+	fprintf(outFile, "routine %s: argument number in definition is different with the previous forward declaration. \n", getname(id));
 	break;
     case ARGUMENTS_NUM2:
-	printf("routine %s: argument number is different with the previous declaration. \n", getname(id));
+	fprintf(outFile, "routine %s: argument number is different with the previous declaration. \n", getname(id));
 	break;
     case FORW_REDECLARE:
-	printf("routine %s: forward redeclaration.\n", getname(id));
+	fprintf(outFile, "routine %s: forward redeclaration.\n", getname(id));
 	break; 
     case PROCE_MISMATCH: 
-	printf("symbol %s: can't act as a procedure call.\n", getname(id)); 
+	fprintf(outFile, "symbol %s: can't act as a procedure call.\n", getname(id)); 
 	break;
      case FUNC_MISMATCH:
-        printf("symbol %s: can't act as a function call.\n", getname(id));
+        fprintf(outFile, "symbol %s: can't act as a function call.\n", getname(id));
         break;
     case VAR_VAL:
-	printf("routine %s: reference/value type of the ", getname(id));
-	printf("%s parameter different with previous forward declaration.\n", seq_str(seq));
+	fprintf(outFile, "routine %s: reference/value type of the ", getname(id));
+	fprintf(outFile, "%s parameter different with previous forward declaration.\n", seq_str(seq));
 	break;
     case CONSTANT_VAR:
-	printf("routine %s: the ", getname(id));
-	printf("%s parameter is a reference argument, can't be a constant.\n", seq_str(seq));
+	fprintf(outFile, "routine %s: the ", getname(id));
+	fprintf(outFile, "%s parameter is a reference argument, can't be a constant.\n", seq_str(seq));
 	break;
     case EXPR_VAR:
-	printf("routine %s: reference argument of the ", getname(id));
-	printf("%s parameter can't be a expression. \n", seq_str(seq));	
+	fprintf(outFile, "routine %s: reference argument of the ", getname(id));
+	fprintf(outFile, "%s parameter can't be a expression. \n", seq_str(seq));	
 	break;
     case CONSTANT_ASSIGN:
-	printf("symbol %s: declared to be a constant, can't be assigned a new value.\n", getname(id));
+	fprintf(outFile, "symbol %s: declared to be a constant, can't be assigned a new value.\n", getname(id));
 	break;
     case STRING_ASSIGN:
-	printf("symbol %s: declared to be an int, can't be assigned a string.\n", getname(id));
+	fprintf(outFile, "symbol %s: declared to be an int, can't be assigned a string.\n", getname(id));
 	break;
     case ARR_TYPE_MIS:
 	if (seq == 0)
-	  printf("symbol %s: isn't defined as an array.\n", getname(id));
+	  fprintf(outFile, "symbol %s: isn't defined as an array.\n", getname(id));
 	else
 	{
-	  printf("symbol %s: the ", getname(id));
-	  printf("%s index isn't defined as an array.\n", seq_str(seq));
+	  fprintf(outFile, "symbol %s: the ", getname(id));
+	  fprintf(outFile, "%s index isn't defined as an array.\n", seq_str(seq));
 	}
 	break;
   case ARR_DIME_MIS:
-    printf("symbol %s: inappropriate usage of arry element.\n", getname(id));
+    fprintf(outFile, "symbol %s: inappropriate usage of arry element.\n", getname(id));
     break;
     case REC_TYPE_MIS:
-          printf("symbol %s: illegal usage of a field name. \n", getname(id));
+          fprintf(outFile, "symbol %s: illegal usage of a field name. \n", getname(id));
 	break;
     case INDX_MIS:
-      printf("symbol %s: has incorrect number of dimensions.\n", getname(id));
-      /*printf("%s index has incorrect number of dimensions.\n", seq_str(seq));*/
+      fprintf(outFile, "symbol %s: has incorrect number of dimensions.\n", getname(id));
+      /*fprintf(outFile, "%s index has incorrect number of dimensions.\n", seq_str(seq));*/
 	break;
     case FIELD_MIS:
-	printf("symbol %s: is an undeclared field name.\n", getname(id));
+	fprintf(outFile, "symbol %s: is an undeclared field name.\n", getname(id));
 	break;
     case VARIABLE_MIS:
-	printf("symbol %s: can't be used as a variable.\n", getname(id));
+	fprintf(outFile, "symbol %s: can't be used as a variable.\n", getname(id));
 	break;
     case NOT_TYPE:
-        printf("symbol %s: is not declared as a type.\n", getname(id));
+        fprintf(outFile, "symbol %s: is not declared as a type.\n", getname(id));
         break;
     case TYPE_MIS:
-	printf("symbol %s: incorrect type usage.\n", getname(id));
+	fprintf(outFile, "symbol %s: incorrect type usage.\n", getname(id));
 	break;
   case MULTI_MAIN:
-    printf("main() method already declared.\n");
+    fprintf(outFile, "main() method already declared.\n");
     break;
     default:
-	printf("error type: %d.\n", type);
+	fprintf(outFile, "error type: %d.\n", type);
   }
   if (action == ABORT)
     exit(0);
@@ -277,7 +277,7 @@ LookUp(id)
     }
 
   /* id is undefined, push a dummy element onto stack */
-  error_msg(UNDECLARATION, CONTINUE, id, 0);
+  // error_msg(UNDECLARATION, CONTINUE, id, 0);
   Push(false, id, 0, true);
   return 0;
 }
@@ -311,7 +311,7 @@ LookUpField(st_ptr, id)
   int id;
 {
   int nesting=GetAttr(st_ptr, NEST_ATTR);
-  int i/*, nest*/;
+  int i = 0/*, nest*/;
   for(i=st_ptr+1; i<=st_top; i++)
   {
     if(GetAttr(i, NEST_ATTR) <= nesting)
@@ -354,7 +354,7 @@ CloseBlock()
     }
 
   nesting--;
-  stack_top = i - 1;				 /* trim the stack */
+  // stack_top = i - 1;				 /* trim the stack */
 }
 
 /*
@@ -462,6 +462,7 @@ char *kind_name[] =
  "typedef", "procforw",  "procedure", "class", "array"
 };
 
+extern FILE* outFile;
 /*
  * STPrint():  print symbol table.  This routine is incomplete, please fill
  * in details. 
@@ -475,7 +476,7 @@ STPrint()
   int treeval = 0;
   tree ptrTree;
 
-  table = stdout;
+  table = outFile;
   fprintf(table,
 	  "********************************Symbol Table************************************\n\n");
   fprintf(table,
@@ -495,6 +496,8 @@ STPrint()
 	   fprintf(table, "%11s", getname(attr_val));
 	  break;
 	case OFFSET_ATTR:
+    fprintf(table, "%11d", attr_val);
+	  break;
 	case NEST_ATTR:
 	  fprintf(table, "%11lu", attr_val);
 	  break;

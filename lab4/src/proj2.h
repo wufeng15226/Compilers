@@ -1,7 +1,7 @@
 #ifndef _PROJ2_H
 #define _PROJ2_H
 
-#
+#include "proj3.h"
 /* proj2.h */
 typedef struct treenode
         {       /* syntax tree node struct */

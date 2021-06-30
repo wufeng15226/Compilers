@@ -68,10 +68,8 @@
 #define NEST_ATTR 2	     /* value: nesting level, set by InsertEntry */
 #define TREE_ATTR 3	     /* value: point back to the subtree */
 #define PREDE_ATTR 4	     /* value: is this id predefined? */
-#define TYPE_ATTR 6	     /* value: pointer to the type tree for a
-			      * varible, constant id or function */
-#define VALUE_ATTR 7	     /* value: the value of a constant id (integer,
-			      * charater or string pointer) */
+#define TYPE_ATTR 6	     /* value: pointer to the type tree for a * varible, constant id or function */
+#define VALUE_ATTR 7	     /* value: the value of a constant id (integer, * charater or string pointer) */
 #define OFFSET_ATTR 8
 	     
 #define KIND_ATTR 5	     /* value: see below */
